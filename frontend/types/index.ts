@@ -9,6 +9,37 @@ export interface ContextEntry {
   last_activity_at?: number;
   title?: string;
   labels?: Record<string, string>;
+  provenance?: Provenance;
+}
+
+export interface TurnResponse {
+  turn_id: string;
+  parent_id: string;
+  depth: number;
+  payload?: any;
+}
+
+export interface FetchTurnsOptions {
+  context_id: string;
+  limit?: number;
+}
+
+export interface ErrorResponse {
+  error: string;
+  code?: number;
+}
+
+export interface SessionInfo {
+  session_id: string;
+  client_tag: string;
+  contexts: string[];
+}
+
+export interface Provenance {
+  service?: string;
+  host?: string;
+  user?: string;
+  trace_id?: string;
 }
 
 export type StoreEvent =

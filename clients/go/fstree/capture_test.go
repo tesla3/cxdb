@@ -249,7 +249,7 @@ func TestTracker_SnapshotIfChanged(t *testing.T) {
 	}
 
 	// Modify file
-	os.WriteFile(filepath.Join(tmpDir, "file.txt"), []byte("modified"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "file.txt"), []byte("modified"), 0644)
 
 	// Third snapshot should detect change
 	snap3, changed, err := tracker.SnapshotIfChanged()
@@ -282,8 +282,8 @@ func TestCapture_MaxFileSize(t *testing.T) {
 
 	// Create a file larger than max
 	largeContent := make([]byte, 1024) // 1KB
-	os.WriteFile(filepath.Join(tmpDir, "large.bin"), largeContent, 0644)
-	os.WriteFile(filepath.Join(tmpDir, "small.txt"), []byte("small"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "large.bin"), largeContent, 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "small.txt"), []byte("small"), 0644)
 
 	snap, err := Capture(tmpDir, WithMaxFileSize(100)) // 100 byte max
 	if err != nil {
