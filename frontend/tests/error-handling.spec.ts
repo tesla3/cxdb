@@ -59,12 +59,8 @@ test.describe('Error Handling', () => {
   });
 
   test('negative context ID is handled gracefully', async ({ apiPage }) => {
-    await apiPage.goto('/');
-
-    // Enter a negative ID (should be normalized or rejected)
-    const input = apiPage.locator('input[placeholder="Enter ID..."]');
-    await input.fill('-1');
-    await input.press('Enter');
+    // Navigate directly to a negative ID via URL
+    await apiPage.goto('/c/-1');
 
     // The app should handle this gracefully (either reject or normalize)
     // Check that it doesn't crash
@@ -84,10 +80,8 @@ baseTest.describe('Server Offline Handling', () => {
 
   baseTest.skip('debugger shows connection error when server is offline', async ({ page }) => {
     // Skip: This test requires manual setup (no CXDB server running)
-    await page.goto('http://localhost:3000');
-    const input = page.locator('input[placeholder="Enter ID..."]');
-    await input.fill('1');
-    await input.press('Enter');
+    // Navigate directly to a context via URL
+    await page.goto('http://localhost:3000/c/1');
     await expect(page.locator('[data-context-debugger]')).toBeVisible();
     const errorText = page.locator('[data-context-debugger]').locator('.text-red-400');
     await expect(errorText).toBeVisible({ timeout: 10000 });

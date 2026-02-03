@@ -103,19 +103,11 @@ export async function expectDebuggerError(page: Page, errorText?: string): Promi
 }
 
 /**
- * Assert the context ID input is empty.
- */
-export function getContextInput(page: Page): Locator {
-  return page.locator('input[placeholder="Enter ID..."]');
-}
-
-/**
- * Add a context via the UI.
+ * Navigate to a context via URL routing.
+ * The UI uses URL-based routing: /c/{contextId} for contexts.
  */
 export async function addContext(page: Page, contextId: string | number): Promise<void> {
-  const input = getContextInput(page);
-  await input.fill(String(contextId));
-  await input.press('Enter');
+  await page.goto(`/c/${contextId}`);
 }
 
 /**
