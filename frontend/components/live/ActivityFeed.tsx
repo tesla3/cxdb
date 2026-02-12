@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Folder, MessageSquare, RefreshCw, User, UserMinus } from 'lucide-react';
+import { AlertCircle, Folder, MessageSquare, RefreshCw, User, UserMinus } from 'lucide-react';
 import type { ActivityItem, StoreEvent } from '@/types';
 import { LiveTimestamp } from './LiveTimestamp';
 import { PresenceIndicator } from './PresenceIndicator';
@@ -156,6 +156,12 @@ function getEventDisplay(event: StoreEvent): {
         icon: <Folder size={12} />,
         label: `Linked to parent ${event.data.parent_context_id}`,
         contextId: event.data.child_context_id,
+      };
+
+    case 'error_occurred':
+      return {
+        icon: <AlertCircle size={12} />,
+        label: `${event.data.kind} ${event.data.status_code}: ${event.data.message}`,
       };
   }
 }

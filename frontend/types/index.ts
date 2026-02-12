@@ -167,6 +167,14 @@ export interface ClientDisconnectedEvent {
   contexts: string[];
 }
 
+export interface ErrorOccurredEvent {
+  timestamp_ms: number;
+  kind: string;
+  status_code: number;
+  message: string;
+  path?: string;
+}
+
 // Union type for all SSE events
 export type StoreEvent =
   | { type: 'context_created'; data: ContextCreatedEvent }
@@ -174,7 +182,8 @@ export type StoreEvent =
   | { type: 'context_linked'; data: ContextLinkedEvent }
   | { type: 'turn_appended'; data: TurnAppendedEvent }
   | { type: 'client_connected'; data: ClientConnectedEvent }
-  | { type: 'client_disconnected'; data: ClientDisconnectedEvent };
+  | { type: 'client_disconnected'; data: ClientDisconnectedEvent }
+  | { type: 'error_occurred'; data: ErrorOccurredEvent };
 
 // Activity feed item (derived from SSE events)
 export interface ActivityItem {
@@ -278,6 +287,14 @@ export interface PerfMetrics {
 export interface ErrorMetrics {
   total: number;
   by_type: Record<string, number>;
+}
+
+export interface ErrorEntry {
+  timestamp_ms: number;
+  kind: string;
+  status_code: number;
+  message: string;
+  path?: string;
 }
 
 export interface FilesystemMetrics {
