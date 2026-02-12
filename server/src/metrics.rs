@@ -9,7 +9,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use chrono::{SecondsFormat, Utc};
 use serde::Serialize;
-use sysinfo::{Disks, Pid, System};
+use sysinfo::{Pid, System};
 
 use crate::registry::Registry;
 use crate::store::Store;
@@ -832,7 +832,35 @@ fn alpha(dt: f64, window_seconds: f64) -> f64 {
     1.0 - (-dt / window_seconds).exp()
 }
 
+/// Returns (total_bytes, free_bytes) for the filesystem containing `path`.
+///
+/// Uses libc::statvfs directly because the sysinfo crate multiplies block
+/// counts by f_bsize instead of f_frsize, which inflates values by 256x on
+/// VirtioFS mounts (Docker Desktop) where f_bsize=1MiB but f_frsize=4KiB.
+#[cfg(unix)]
 fn disk_space_for_path(path: &Path) -> (u64, u64) {
+    use std::ffi::CString;
+    use std::os::unix::ffi::OsStrExt;
+
+    let c_path = match CString::new(path.as_os_str().as_bytes()) {
+        Ok(p) => p,
+        Err(_) => return (0, 0),
+    };
+    unsafe {
+        let mut stat: libc::statvfs = std::mem::zeroed();
+        if libc::statvfs(c_path.as_ptr(), &mut stat) == 0 {
+            let total = (stat.f_blocks as u64).saturating_mul(stat.f_frsize as u64);
+            let free = (stat.f_bavail as u64).saturating_mul(stat.f_frsize as u64);
+            (total, free)
+        } else {
+            (0, 0)
+        }
+    }
+}
+
+#[cfg(not(unix))]
+fn disk_space_for_path(path: &Path) -> (u64, u64) {
+    use sysinfo::Disks;
     let disks = Disks::new_with_refreshed_list();
     let mut best_match: Option<(u64, u64, usize)> = None;
     for disk in disks.list() {
@@ -851,5 +879,39 @@ fn disk_space_for_path(path: &Path) -> (u64, u64) {
         (total, free)
     } else {
         (0, 0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn disk_space_returns_sane_values() {
+        let (total, free) = disk_space_for_path(Path::new("/tmp"));
+        assert!(total > 0, "total disk space should be non-zero");
+        assert!(free <= total, "free space should not exceed total");
+        // Sanity: total should be less than 100 TiB (catches the VirtioFS inflation bug)
+        let max_reasonable = 100 * 1024 * 1024 * 1024 * 1024_u64; // 100 TiB
+        assert!(
+            total < max_reasonable,
+            "total {total} bytes exceeds 100 TiB — likely f_bsize/f_frsize confusion"
+        );
+    }
+
+    #[test]
+    fn disk_space_nonexistent_path_returns_zero() {
+        let (total, free) = disk_space_for_path(Path::new("/nonexistent_path_xyz_12345"));
+        // On Unix, statvfs on a nonexistent path returns an error → (0, 0)
+        // On other platforms, sysinfo may still match "/" as a prefix
+        #[cfg(unix)]
+        {
+            assert_eq!(total, 0);
+            assert_eq!(free, 0);
+        }
+        #[cfg(not(unix))]
+        {
+            let _ = (total, free); // sysinfo might match root mount
+        }
     }
 }
