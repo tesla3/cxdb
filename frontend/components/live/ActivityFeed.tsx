@@ -150,6 +150,13 @@ function getEventDisplay(event: StoreEvent): {
         contextId: event.data.context_id,
         clientTag: event.data.client_tag,
       };
+
+    case 'context_linked':
+      return {
+        icon: <Folder size={12} />,
+        label: `Linked to parent ${event.data.parent_context_id}`,
+        contextId: event.data.child_context_id,
+      };
   }
 }
 
