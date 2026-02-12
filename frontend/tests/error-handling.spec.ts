@@ -4,18 +4,18 @@
 import { test, expect } from './fixtures';
 import { test as baseTest } from '@playwright/test';
 import {
-  addContext,
   waitForDebugger,
-  expectDebuggerError,
-  expectServerOffline,
 } from './utils/assertions';
 
 test.describe('Error Handling', () => {
   test('invalid context ID shows error or empty state', async ({ apiPage, cxdbServer }) => {
+    // Navigate to home first, then trigger client-side navigation to non-existent context
     await apiPage.goto('/');
-
-    // Enter a non-existent context ID
-    await addContext(apiPage, 999999);
+    await apiPage.waitForSelector('h1');
+    await apiPage.evaluate(() => {
+      window.history.pushState(null, '', '/c/999999');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
     await waitForDebugger(apiPage);
 
     // Wait for the request to complete
@@ -39,15 +39,17 @@ test.describe('Error Handling', () => {
     await expect(apiPage.locator('[data-context-debugger]')).not.toBeVisible();
 
     // Should show the welcome message
-    await expect(apiPage.getByText('Live Observer')).toBeVisible();
+    await expect(apiPage.getByText('CXDB')).toBeVisible();
   });
 
   test('very large context ID is handled gracefully', async ({ apiPage, cxdbServer }) => {
+    // Navigate to home first, then trigger client-side navigation
     await apiPage.goto('/');
-
-    // Enter a very large context ID
-    await addContext(apiPage, '18446744073709551615'); // Max u64
-
+    await apiPage.waitForSelector('h1');
+    await apiPage.evaluate(() => {
+      window.history.pushState(null, '', '/c/18446744073709551615');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
     await waitForDebugger(apiPage);
 
     // Wait for request to complete
@@ -59,11 +61,16 @@ test.describe('Error Handling', () => {
   });
 
   test('negative context ID is handled gracefully', async ({ apiPage }) => {
-    // Navigate directly to a negative ID via URL
-    await apiPage.goto('/c/-1');
+    // Navigate to home first, then trigger client-side navigation
+    await apiPage.goto('/');
+    await apiPage.waitForSelector('h1');
+    await apiPage.evaluate(() => {
+      window.history.pushState(null, '', '/c/-1');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
 
     // The app should handle this gracefully (either reject or normalize)
-    // Check that it doesn't crash
+    // Check that the header is still visible (app didn't crash)
     await expect(apiPage.locator('header')).toBeVisible();
   });
 });

@@ -148,19 +148,27 @@ export const test = base.extend<TestFixtures>({
       // Replace the origin with the test server
       const testUrl = url.replace(/http:\/\/[^\/]+\/v1/, `http://127.0.0.1:${cxdbServer.httpPort}/v1`);
 
-      // Fetch from the test server
-      const response = await fetch(testUrl, {
-        method: route.request().method(),
-        headers: route.request().headers(),
-        body: route.request().postData() || undefined,
-      });
+      try {
+        // Fetch from the test server
+        const response = await fetch(testUrl, {
+          method: route.request().method(),
+          headers: route.request().headers(),
+          body: route.request().postData() || undefined,
+        });
 
-      // Return the response to the page
-      await route.fulfill({
-        status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
-        body: Buffer.from(await response.arrayBuffer()),
-      });
+        // Return the response to the page
+        await route.fulfill({
+          status: response.status,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: Buffer.from(await response.arrayBuffer()),
+        });
+      } catch {
+        // Server may have closed the connection; return 502
+        await route.fulfill({
+          status: 502,
+          body: 'Bad Gateway',
+        });
+      }
     });
 
     // Intercept /healthz requests and redirect them to the test server

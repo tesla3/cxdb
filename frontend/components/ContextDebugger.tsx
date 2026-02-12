@@ -661,8 +661,9 @@ export function ContextDebugger({ contextId, isOpen, onClose, lastEvent, initial
       const result = extractToolResult(turn);
       if (result?.isError) errors++;
     }
-    const totalDepth = (data.meta?.head_depth ?? -1) + 1;
-    return { total: totalDepth, loaded: data.turns.length, toolCalls, errors };
+    const headId = data.meta?.head_turn_id;
+    const total = headId && headId !== '0' ? (data.meta?.head_depth ?? 0) + 1 : 0;
+    return { total, loaded: data.turns.length, toolCalls, errors };
   }, [data]);
 
   // Auto-select last turn when following and new turns arrive

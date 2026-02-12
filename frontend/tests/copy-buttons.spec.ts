@@ -147,11 +147,13 @@ test.describe('Copy Functionality', () => {
   });
 
   test('copy buttons are disabled when no data', async ({ apiPage }) => {
-    // Navigate to homepage without loading any context
+    // Navigate to home first, then trigger client-side navigation to non-existent context
     await apiPage.goto('/');
-
-    // Enter a non-existent context ID
-    await addContext(apiPage, 999999);
+    await apiPage.waitForSelector('h1');
+    await apiPage.evaluate(() => {
+      window.history.pushState(null, '', '/c/999999');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
     await waitForDebugger(apiPage);
 
     // Wait for error or empty state

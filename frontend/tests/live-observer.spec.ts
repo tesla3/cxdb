@@ -7,22 +7,32 @@ import { test as base, expect, Page } from '@playwright/test';
  * Live Observer Tests
  *
  * These tests verify the real-time streaming UI features (Sprint 006).
- * They use mock mode (which is enabled by default) to simulate SSE events
- * without requiring the backend SSE infrastructure.
+ * They enable mock mode to simulate SSE events without requiring
+ * the backend SSE infrastructure.
  */
 
 // Simple test that doesn't require the full server fixtures
 const test = base;
 
+/** Enable mock mode by clicking the Live Mode toggle button. */
+async function enableMockMode(page: Page) {
+  const toggle = page.getByRole('button', { name: 'Live Mode' });
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  // After clicking, the button text changes to "Mock Mode"
+  await expect(page.getByRole('button', { name: 'Mock Mode' })).toBeVisible();
+}
+
 test.describe('Live Observer UI', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     // Wait for initial render
-    await page.waitForSelector('text=Live Observer');
+    await page.waitForSelector('text=CXDB');
+    // Enable mock mode (defaults to Live Mode)
+    await enableMockMode(page);
   });
 
   test('displays mock mode indicator', async ({ page }) => {
-    // Mock mode should be enabled by default - look for the button specifically
     await expect(page.getByRole('button', { name: 'Mock Mode' })).toBeVisible();
   });
 
@@ -40,16 +50,16 @@ test.describe('Live Observer UI', () => {
     const contextsTab = page.locator('button:has-text("Contexts")');
     const activityTab = page.locator('button:has-text("Activity")');
 
-    await expect(contextsTab).toHaveClass(/text-purple/);
+    await expect(contextsTab).toHaveClass(/text-theme-accent/);
 
     // Click Activity tab
     await activityTab.click();
-    await expect(activityTab).toHaveClass(/text-purple/);
+    await expect(activityTab).toHaveClass(/text-theme-accent/);
     await expect(page.getByText('No activity yet')).toBeVisible();
 
     // Click back to Contexts
     await contextsTab.click();
-    await expect(contextsTab).toHaveClass(/text-purple/);
+    await expect(contextsTab).toHaveClass(/text-theme-accent/);
   });
 
   test('keyboard shortcut A toggles activity feed', async ({ page }) => {
@@ -105,6 +115,8 @@ test.describe('Live Observer UI', () => {
 test.describe('Live Observer Animations', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await page.waitForSelector('text=CXDB');
+    await enableMockMode(page);
   });
 
   test('presence indicators have breathe animation', async ({ page }) => {
@@ -141,9 +153,8 @@ test.describe('Reduced Motion Support', () => {
     // Emulate reduced motion preference
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-
-    // The page should load without errors
-    await expect(page.getByText('Live Observer')).toBeVisible();
+    await page.waitForSelector('text=CXDB');
+    await enableMockMode(page);
 
     // Animations should be disabled (CSS handles this via media query)
     // We just verify the page still works
@@ -159,6 +170,8 @@ test.describe('Reduced Motion Support', () => {
 test.describe('Relative Timestamps', () => {
   test('timestamps update over time', async ({ page }) => {
     await page.goto('/');
+    await page.waitForSelector('text=CXDB');
+    await enableMockMode(page);
 
     // Start demo to generate events
     await page.getByRole('button', { name: /Start Demo/i }).click();

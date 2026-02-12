@@ -132,7 +132,7 @@ export function getCopyAllButton(page: Page): Locator {
  * Get the "Copy" button for the selected event.
  */
 export function getCopyEventButton(page: Page): Locator {
-  return page.locator('[data-context-debugger]').getByRole('button', { name: 'Copy', exact: true });
+  return page.locator('[data-context-debugger]').getByRole('button', { name: 'Copy', exact: true }).first();
 }
 
 /**

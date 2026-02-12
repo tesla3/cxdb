@@ -26,13 +26,13 @@ test.describe('Keyboard Navigation', () => {
     const items = getTimelineItems(apiPage);
 
     // First item should be initially selected (has bg-slate-800/70 class)
-    await expect(items.nth(0)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(0)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Press j to move down
     await apiPage.keyboard.press('j');
 
     // Second item should now be selected
-    await expect(items.nth(1)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(1)).toHaveClass(/bg-theme-bg-tertiary/);
   });
 
   test('k key moves selection up', async ({ apiPage, goWriter, registry }) => {
@@ -52,13 +52,13 @@ test.describe('Keyboard Navigation', () => {
 
     // Move to second item first
     await apiPage.keyboard.press('j');
-    await expect(items.nth(1)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(1)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Press k to move back up
     await apiPage.keyboard.press('k');
 
     // First item should be selected again
-    await expect(items.nth(0)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(0)).toHaveClass(/bg-theme-bg-tertiary/);
   });
 
   test('ArrowDown moves selection down', async ({ apiPage, goWriter, registry }) => {
@@ -74,12 +74,12 @@ test.describe('Keyboard Navigation', () => {
     await waitForDebuggerLoaded(apiPage);
 
     const items = getTimelineItems(apiPage);
-    await expect(items.nth(0)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(0)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Press ArrowDown
     await apiPage.keyboard.press('ArrowDown');
 
-    await expect(items.nth(1)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(1)).toHaveClass(/bg-theme-bg-tertiary/);
   });
 
   test('ArrowUp moves selection up', async ({ apiPage, goWriter, registry }) => {
@@ -98,12 +98,12 @@ test.describe('Keyboard Navigation', () => {
 
     // Move down first
     await apiPage.keyboard.press('ArrowDown');
-    await expect(items.nth(1)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(1)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Press ArrowUp
     await apiPage.keyboard.press('ArrowUp');
 
-    await expect(items.nth(0)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(0)).toHaveClass(/bg-theme-bg-tertiary/);
   });
 
   test('Escape closes the debugger modal', async ({ apiPage, goWriter, registry }) => {
@@ -142,19 +142,19 @@ test.describe('Keyboard Navigation', () => {
     const items = getTimelineItems(apiPage);
 
     // First item selected
-    await expect(items.nth(0)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(0)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Press k (up) at the top - should stay at first item
     await apiPage.keyboard.press('k');
-    await expect(items.nth(0)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(0)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Go to last item
     await apiPage.keyboard.press('j');
-    await expect(items.nth(1)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(1)).toHaveClass(/bg-theme-bg-tertiary/);
 
     // Press j (down) at the bottom - should stay at last item
     await apiPage.keyboard.press('j');
-    await expect(items.nth(1)).toHaveClass(/bg-slate-800/);
+    await expect(items.nth(1)).toHaveClass(/bg-theme-bg-tertiary/);
   });
 
   test('Ctrl+R refreshes data', async ({ apiPage, goWriter, registry }) => {

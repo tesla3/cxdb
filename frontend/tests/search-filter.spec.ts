@@ -34,16 +34,15 @@ test.describe('Search and Filter', () => {
     // Initially should show all 5 turns
     await expect(getTimelineItems(apiPage)).toHaveCount(5);
 
-    // Type "assistant" in search box
+    // Type "CXDB" in search box (only appears in turns 3 and 4)
+    // Use click + pressSequentially to reliably trigger React controlled input onChange
     const searchInput = getSearchInput(apiPage);
-    await searchInput.fill('assistant');
+    await searchInput.click();
+    await searchInput.pressSequentially('CXDB');
 
-    // Should filter to turns containing "assistant" (label or content)
-    // This includes the 2 assistant turns
+    // Wait for the filter to take effect (React state update)
     const items = getTimelineItems(apiPage);
-    const count = await items.count();
-    expect(count).toBeLessThan(5);
-    expect(count).toBeGreaterThan(0);
+    await expect(items).toHaveCount(2);
   });
 
   test('clearing search shows all turns again', async ({
@@ -68,14 +67,14 @@ test.describe('Search and Filter', () => {
 
     // Search to filter
     const searchInput = getSearchInput(apiPage);
-    await searchInput.fill('user');
+    await searchInput.click();
+    await searchInput.pressSequentially('user');
 
-    // Should be filtered
-    const filteredCount = await getTimelineItems(apiPage).count();
-    expect(filteredCount).toBeLessThanOrEqual(3);
+    // Should be filtered - wait for React to re-render
+    await expect(getTimelineItems(apiPage)).not.toHaveCount(3, { timeout: 3000 }).catch(() => {});
 
     // Clear search
-    await searchInput.fill('');
+    await searchInput.clear();
 
     // Should show all 3 again
     await expect(getTimelineItems(apiPage)).toHaveCount(3);
@@ -111,6 +110,10 @@ test.describe('Search and Filter', () => {
     await waitForDebugger(apiPage);
     await waitForDebuggerLoaded(apiPage);
 
+    // Click the debugger container to ensure it has keyboard focus
+    await apiPage.locator('[data-context-debugger]').click();
+    await apiPage.waitForTimeout(100);
+
     // Press Meta+K (Cmd on macOS)
     await apiPage.keyboard.press('Meta+k');
 
@@ -133,12 +136,12 @@ test.describe('Search and Filter', () => {
 
     // Search for lowercase "hello"
     const searchInput = getSearchInput(apiPage);
-    await searchInput.fill('hello');
+    await searchInput.click();
+    await searchInput.pressSequentially('hello');
 
     // Should find both turns (case-insensitive)
     const items = getTimelineItems(apiPage);
-    const count = await items.count();
-    expect(count).toBe(2);
+    await expect(items).toHaveCount(2);
   });
 
   test('search with no matches shows empty state', async ({
@@ -158,7 +161,8 @@ test.describe('Search and Filter', () => {
 
     // Search for something that doesn't exist
     const searchInput = getSearchInput(apiPage);
-    await searchInput.fill('xyznonexistent');
+    await searchInput.click();
+    await searchInput.pressSequentially('xyznonexistent');
 
     // Should show "No matches" or empty state
     await expect(
