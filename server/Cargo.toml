@@ -28,6 +28,7 @@ tiny_http = "0.12"
 url = "2.5"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 sysinfo = "0.30"
+libc = "0.2"
 regex = "1.10"
 tracing = "0.1"
 
