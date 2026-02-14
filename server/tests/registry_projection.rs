@@ -385,16 +385,10 @@ fn map_with_ref_recursively_projects() {
     let inner_map = vec![
         (Value::Integer(1.into()), Value::String("root".into())),
         (Value::Integer(2.into()), Value::String("explorer".into())),
-        (
-            Value::Integer(5.into()),
-            Value::String("delegation".into()),
-        ),
+        (Value::Integer(5.into()), Value::String("delegation".into())),
     ];
     let root_map = vec![
-        (
-            Value::Integer(1.into()),
-            Value::String("handoff".into()),
-        ),
+        (Value::Integer(1.into()), Value::String("handoff".into())),
         (Value::Integer(13.into()), Value::Map(inner_map)),
     ];
     let value = Value::Map(root_map);
@@ -406,10 +400,7 @@ fn map_with_ref_recursively_projects() {
     let data = projection.data.as_object().expect("data object");
 
     // Top-level field decoded
-    assert_eq!(
-        data.get("item_type").unwrap().as_str().unwrap(),
-        "handoff"
-    );
+    assert_eq!(data.get("item_type").unwrap().as_str().unwrap(), "handoff");
 
     // Nested map+ref field MUST have named keys, not numeric string keys
     let handoff = data
@@ -417,10 +408,7 @@ fn map_with_ref_recursively_projects() {
         .expect("handoff field present")
         .as_object()
         .expect("handoff is object");
-    assert_eq!(
-        handoff.get("from_agent").unwrap().as_str().unwrap(),
-        "root"
-    );
+    assert_eq!(handoff.get("from_agent").unwrap().as_str().unwrap(), "root");
     assert_eq!(
         handoff.get("to_agent").unwrap().as_str().unwrap(),
         "explorer"
